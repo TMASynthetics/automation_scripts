@@ -1,0 +1,99 @@
+import botocore
+import boto3
+import logging
+import time
+import json
+#### IMPORTS GO HERE ####
+
+# =============================
+# LOGGING CONFIGURATION
+# =============================
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# =============================
+# BOTO3 GLOBAL SESSION & CLIENTS
+# =============================
+global_session = boto3.Session()
+
+# Advanced configuration for Boto3 clients
+config = botocore.config.Config(
+    max_pool_connections=50,
+    tcp_keepalive=True,
+    connect_timeout=5,
+    read_timeout=60,
+    retries={'max_attempts': 0}
+)
+
+s3_client = global_session.client("s3", config=config)
+sagemaker_runtime = global_session.client("sagemaker-runtime", config=config)
+
+# =============================
+# TYPES & CONSTANTS
+# =============================
+
+# =============================
+# PRE-/POST-PROCESSING CLASSES
+# =============================
+
+#### CLASSES GO HERE ####
+
+# =============================
+# LAMBDA HANDLER
+# =============================
+def lambda_handler(event, context):
+    overall_start = time.time()
+    logger.info("===== Lambda execution started =====")
+    logger.info(f"Received event: {event}")
+
+    try:
+        # -------------------------------------------------------
+        # STEP 1: Retrieve S3 information and parameters
+        # -------------------------------------------------------
+        bucket_name = event.get("bucketName")
+        target_key = event.get("targetKey")
+        source_key = event.get("sourceKey")
+
+
+        if not all([bucket_name, target_key, source_key]):
+            raise ValueError("The keys 'bucketName', 'targetKey', and/or 'sourceKey' are missing from the event.")
+
+        # -------------------------------------------------------
+        # STEP 2: Download images from S3
+        # -------------------------------------------------------
+        local_target_path = "/tmp/target.jpg"
+        local_source_path = "/tmp/source.jpg"
+
+        t0 = time.time()
+        s3_client.download_file(bucket_name, target_key, local_target_path)
+        s3_client.download_file(bucket_name, source_key, local_source_path)
+        t1 = time.time()
+        logger.info(f"Time spent downloading images: {t1 - t0:.4f} sec")
+
+        # -------------------------------------------------------
+        # STEP 4: Execute the Face Swapping pipeline
+        # -------------------------------------------------------
+        t0 = time.time()
+
+        pipeline = Pipeline(debug=True)
+        event_response = pipeline.run(request=event)
+        json_object = json.dumps(event_response, indent=4)
+
+        t1 = time.time()
+        logger.info(f"Time spent on face swapping pipeline: {t1 - t0:.4f} sec")
+
+        # -------------------------------------------------------
+        # STEP 5: Save or return the result
+        # -------------------------------------------------------
+        # Example: Save locally and re-upload to S3
+
+        return json_object
+
+    except Exception as e:
+        logger.error(f"An error occurred: {e}", exc_info=True)
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)})
+        }
+    finally:
+        logger.info("===== Lambda execution finished =====")
