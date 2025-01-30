@@ -32,6 +32,8 @@ sagemaker_runtime = global_session.client("sagemaker-runtime", config=config)
 # TYPES & CONSTANTS
 # =============================
 
+#### TYPES GO HERE ####
+
 # =============================
 # PRE-/POST-PROCESSING CLASSES
 # =============================
@@ -74,9 +76,11 @@ def lambda_handler(event, context):
         # STEP 4: Execute the Face Swapping pipeline
         # -------------------------------------------------------
         t0 = time.time()
-
-        pipeline = Pipeline(debug=True)
-        event_response = pipeline.run(request=event)
+        
+        json_data = json.load(open(event['json_file']))
+        frame_data: VisionFrame = cv2.imread(json_data['args']['input_image_1'])
+        pipeline = Pipeline(debug=json_data['debug'])
+        event_response = pipeline.run(request_data=json_data, vision_frame=frame_data)
         json_object = json.dumps(event_response, indent=4)
 
         t1 = time.time()

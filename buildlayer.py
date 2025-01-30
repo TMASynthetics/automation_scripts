@@ -2,7 +2,7 @@ import tempfile, shutil, os, ast
 
 config = {
   "remove tmp files": False,
-  "template file": "/home/josj/scr/MEPS/xavinator/templates/lambda_function",
+  "template file": "/home/josj/scr/MEPS/automation_scripts/templates/lambda_function",
   "compiled file": "lambda_function.py"
 }
 
@@ -26,6 +26,9 @@ def build_from_template(template_file, output_file, imports, class_code):
           inject_classes(class_code, o, 0)
         else:
           o.write(line)
+
+def extract_types(src):
+  
 
 def extract_pipeline(src):
   packages = []
@@ -71,6 +74,8 @@ def main():
   temp_dir = tempfile.mkdtemp()  # Create the temp directory
   print(f"Temporary directory created at: {temp_dir}")
 
+  types = extract_types("config/typing_config.py")
+  print(f"Extracted types: {types}")
   packages, class_code = extract_pipeline("src")
   compiled = os.path.join(temp_dir, config["compiled file"])
   build_from_template(config["template file"], compiled, packages, class_code)
