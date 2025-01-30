@@ -100,6 +100,15 @@ def main():
   compiled = os.path.join(temp_dir, config["compiled file"])
   build_from_template(config["template file"], compiled, packages, types, class_code)
 
+  # Move the contents of temp_dir into the final project directory
+  for item in os.listdir(temp_dir):
+    s = os.path.join(temp_dir, item)
+    d = os.path.join(config["Final project location directory"], item)
+    if os.path.isdir(s):
+      shutil.copytree(s, d, dirs_exist_ok=True)
+    else:
+      shutil.copy2(s, d)
+
   if (config["remove tmp files"]):
     print("Removing temp dir")
     shutil.rmtree(temp_dir)
