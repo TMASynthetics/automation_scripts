@@ -1,9 +1,9 @@
-import tempfile, shutil, os, onnx
+import tempfile, shutil, os, onnx, ast
 from config.models import MODELS
 import subprocess
 
 config = {
-  "remove tmp files": False,
+  "remove tmp files": True,
   "template file": "/home/josj/scr/MEPS/automation_scripts/templates/lambda_function",
   "compiled file": "lambda_function.py",
   "package models": True,
@@ -12,6 +12,7 @@ config = {
   "triton config max batch size": 5,
   "triton config platform": "onnxruntime_onnx",
   "triton model version number": 1,
+  "Final project location directory": "aws_lambda"
 }
 
 def inject_lines(packages, fileHandle):
@@ -213,6 +214,19 @@ def main():
 
   if(config["package models"]):
     pack_models(temp_dir)
+
+  # Create or update the final destination directory
+  if(not os.path.exists(config["Final project location directory"])):
+    os.makedirs(config["Final project location directory"], exist_ok=True)
+
+  # Move the contents of temp_dir into the final project directory
+  for item in os.listdir(temp_dir):
+    s = os.path.join(temp_dir, item)
+    d = os.path.join(config["Final project location directory"], item)
+    if os.path.isdir(s):
+      shutil.copytree(s, d, dirs_exist_ok=True)
+    else:
+      shutil.copy2(s, d)
 
   if (config["remove tmp files"]):
     print("Removing temp dir")
