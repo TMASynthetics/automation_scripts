@@ -2,7 +2,7 @@ import tempfile, shutil, os, ast
 
 config = {
   "remove tmp files": False,
-  "template file": "/home/josj/scr/MEPS/automation_scripts/templates/lambda_function",
+  "template file": "/path/to/automation_scripts/templates/lambda_function",
   "compiled file": "lambda_function.py"
 }
 
