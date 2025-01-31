@@ -4,7 +4,7 @@ import subprocess
 
 config = {
   "remove tmp files": True,
-  "template file": "/home/josj/scr/MEPS/automation_scripts/templates/lambda_function",
+  "template file": "/path/to/MEPS/automation_scripts/templates/lambda_function",
   "compiled file": "lambda_function.py",
   "package models": True,
   "run tar command": True,
