@@ -56,6 +56,9 @@ def lambda_handler(event, context):
         target_key = event.get("targetKey")
         source_key = event.get("sourceKey")
 
+        preprocessor = Preprocessor()
+        postprocessor = Postprocessor()
+
 
         if not all([bucket_name, target_key, source_key]):
             raise ValueError("The keys 'bucketName', 'targetKey', and/or 'sourceKey' are missing from the event.")
@@ -77,11 +80,7 @@ def lambda_handler(event, context):
         # -------------------------------------------------------
         t0 = time.time()
         
-        json_data = json.load(open(event['json_file']))
-        frame_data: VisionFrame = cv2.imread(json_data['args']['input_image_1'])
-        pipeline = Pipeline(debug=json_data['debug'])
-        event_response = pipeline.run(request_data=json_data, vision_frame=frame_data)
-        json_object = json.dumps(event_response, indent=4)
+        ### PIPELINE GOES HERE ###
 
         t1 = time.time()
         logger.info(f"Time spent on face swapping pipeline: {t1 - t0:.4f} sec")

@@ -6,17 +6,21 @@ config = {
   "compiled file": "lambda_function.py"
 }
 
-def inject_lines(packages, fileHandle):
-  for line in packages:
+
+def inject_lines(lines, fileHandle):
+  for line in lines:
     fileHandle.write(f"{line}\n")
 
-def inject_classes(class_code, fileHandle, indent):
+def inject_with_indent(lines, fileHandle, indent):
   # Write each line with a dynamic level of indentation
-  tabs = '\t'*indent
-  for line in class_code:
-    fileHandle.write(f"{tabs}{line}\n")
+  if lines is not None:
+    lines = [line.strip(" ") for line in lines]
+    lines = [line.strip("\t") for line in lines]
+    tabs = ' '*indent*2
+    for line in lines:
+      fileHandle.write(f"{tabs}{line}\n")
 
-def build_from_template(template_file, output_file, imports, types, class_code):
+def build_from_template(template_file, output_file, imports, types, class_code, pipeline):
   writing = False
   with open(template_file, "r") as t:
     with open(output_file, "w") as o:
@@ -27,7 +31,9 @@ def build_from_template(template_file, output_file, imports, types, class_code):
         elif ("TYPES GO HERE" in line):
           inject_lines(types, o)
         elif ("CLASSES GO HERE" in line):
-          inject_classes(class_code, o, 0)
+          inject_lines(class_code, o)
+        elif ("PIPELINE GOES HERE"in line):
+          inject_with_indent(pipeline, o, 4)
         elif (writing):
             o.write(line)
 
@@ -67,7 +73,7 @@ def extract_packages(line, packages):
             packages.append(import_statement)
   return packages, found
 
-def extract_pipeline(src, packages):
+def extract_classes(src, packages):
   class_code = []
   for filename in os.listdir(src):
     readline = False
@@ -86,6 +92,46 @@ def extract_pipeline(src, packages):
             class_code.append(line)
   return packages, class_code
 
+def extract_pipeline(src, process):
+  pipeline_lines = []
+  pipeline_path = os.path.join(src, "pipeline.py")
+  read=True
+  pipeline=False
+  with open(pipeline_path, 'r') as p:
+    lines = [line.rstrip('\n') for line in p]
+    for line in lines:
+      if f"*** {process.upper()} START ***" in line:
+        pipeline=True
+      if f"*** {process.upper()} END ***" in line:
+        return pipeline_lines
+      if pipeline:
+        if "	# Inference" in line:
+          read=False
+        elif "	# Preprocess" in line or 	"# Postprocess" in line:
+          read=True
+        if read:
+          line = line.replace(f"self.{process}_pre", "preprocessor")
+          line = line.replace(f"self.{process}_post", "postprocessor")
+          pipeline_lines.append(line)
+
+def buildLayerForEachDirectory(dir, temp_dir, types, packages):
+  for subdir in os.listdir(dir):
+    subdir_path = os.path.join(dir, subdir)
+    if os.path.isdir(subdir_path) and "_" not in subdir:  # Only process directories without "_"
+      target_dir = os.path.join(temp_dir, subdir)
+      os.mkdir(target_dir)
+      print(f"Processing directory: {subdir}")
+      pipeline = extract_pipeline("src", subdir)
+      packages, class_code = extract_classes(subdir_path, packages=packages)
+      compiled = os.path.join(target_dir, config['compiled file'])
+      build_from_template(config["template file"], compiled, packages, types, class_code, pipeline)
+
+
+def buildLayer(dir, packages, temp_dir):
+  packages, class_code = extract_classes(dir, packages=packages)
+  compiled = os.path.join(temp_dir, config['compiled file'])
+  build_from_template(config["template file"], compiled, packages, types, class_code, pipeline)
+
 def main():
   temp_dir = tempfile.mkdtemp()  # Create the temp directory
   print(f"Temporary directory created at: {temp_dir}")
@@ -96,9 +142,13 @@ def main():
     for line in lines:
       packages, _ = extract_packages(line, packages)
   packages, types = extract_types("config/typing_config.py", packages=packages)
-  packages, class_code = extract_pipeline("src", packages=packages)
-  compiled = os.path.join(temp_dir, config["compiled file"])
-  build_from_template(config["template file"], compiled, packages, types, class_code)
+
+  ##For each directory in src
+  buildLayerForEachDirectory("src", temp_dir, types, packages)
+
+  ## If the processes aren't separated into directories
+  ## Uncomment the line below and comment the one above
+  # buildLayer("src", packages, temp_dir)
 
   # Move the contents of temp_dir into the final project directory
   for item in os.listdir(temp_dir):
