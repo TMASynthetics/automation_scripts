@@ -59,6 +59,7 @@ def lambda_handler(event, context):
         preprocessor = Preprocessor()
         postprocessor = Postprocessor()
 
+        ### LAMBDA INPUTS GO HERE ####
 
         if not all([bucket_name, target_key, source_key]):
             raise ValueError("The keys 'bucketName', 'targetKey', and/or 'sourceKey' are missing from the event.")
