@@ -10,7 +10,7 @@ class LayerBuilder:
   def __init__(self):
     self.config = {
       "remove tmp files": True,
-      "template file": "/home/josj/scr/MEPS/automation_scripts/templates/lambda_function",
+      "template file": "/path/to/automation_scripts/templates/lambda_function",
       "compiled file": "lambda_function.py"
     }
 
