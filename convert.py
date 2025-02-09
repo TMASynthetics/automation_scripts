@@ -151,7 +151,16 @@ class LayerBuilder:
             args = match.split(',')
             for arg in args:
                 arg = arg.strip()
-                if not arg.isdigit() and not (arg.startswith('"') and arg.endswith('"')) and not (arg.startswith("'") and arg.endswith("'")) and not arg.startswith('(') and not arg in ['True', 'False']:
+                if (
+                      not arg.isdigit()
+                      and not (arg.startswith('"')
+                      and arg.endswith('"'))
+                      and not (arg.startswith("'")
+                      and arg.endswith("'"))
+                      and not arg.startswith('(')
+                      and not arg in ['True', 'False']
+                      and len(arg) > 0
+                    ):
                     parameters.append(f"{arg} = event.get('{arg}')")
     return parameters
 
