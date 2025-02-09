@@ -26,11 +26,7 @@ tritonBuilderConfig = {
 
 class LayerBuilder:
   def __init__(self):
-    self.config = {
-      "remove tmp files": True,
-      "template file": "/home/josj/scr/MEPS/automation_scripts/templates/lambda_function",
-      "compiled file": "lambda_function.py"
-    }
+    self.config = layerBuilderConfig
 
   def inject_lines(self, lines, fileHandle):
     for line in lines:
