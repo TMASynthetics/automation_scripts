@@ -4,20 +4,16 @@ Settings = {
   "remove tmp files": True,
   "Final project location directory": "aws_lambda"
 }
+
 config = {
   "remove tmp files": True,
-  "template file": "/path/to/automation_scripts/templates/lambda_function",
+  "template file": "/path/to/scr/MEPS/automation_scripts/templates/lambda_function",
   "compiled file": "lambda_function.py"
 }
 
-
 class LayerBuilder:
   def __init__(self):
-    self.config = {
-      "remove tmp files": True,
-      "template file": "/home/josj/scr/MEPS/automation_scripts/templates/lambda_function",
-      "compiled file": "lambda_function.py"
-    }
+    self.config
 
   def inject_lines(self, lines, fileHandle):
     for line in lines:
