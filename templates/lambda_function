@@ -56,25 +56,16 @@ def lambda_handler(event, context):
         target_key = event.get("targetKey")
         source_key = event.get("sourceKey")
 
+        # Lambda pipeline inputs
+        ### LAMBDA INPUTS GO HERE ####
+
+        # Create the instances of the preprocessor and postprocessor
         preprocessor = Preprocessor()
         postprocessor = Postprocessor()
 
-        ### LAMBDA INPUTS GO HERE ####
 
         if not all([bucket_name, target_key, source_key]):
             raise ValueError("The keys 'bucketName', 'targetKey', and/or 'sourceKey' are missing from the event.")
-
-        # -------------------------------------------------------
-        # STEP 2: Download images from S3
-        # -------------------------------------------------------
-        local_target_path = "/tmp/target.jpg"
-        local_source_path = "/tmp/source.jpg"
-
-        t0 = time.time()
-        s3_client.download_file(bucket_name, target_key, local_target_path)
-        s3_client.download_file(bucket_name, source_key, local_source_path)
-        t1 = time.time()
-        logger.info(f"Time spent downloading images: {t1 - t0:.4f} sec")
 
         # -------------------------------------------------------
         # STEP 4: Execute the Face Swapping pipeline
@@ -91,7 +82,7 @@ def lambda_handler(event, context):
         # -------------------------------------------------------
         # Example: Save locally and re-upload to S3
 
-        return json_object
+        ### RETURNS GO HERE ####
 
     except Exception as e:
         logger.error(f"An error occurred: {e}", exc_info=True)

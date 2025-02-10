@@ -4,6 +4,11 @@ Settings = {
   "remove tmp files": True,
   "Final project location directory": "aws_lambda"
 }
+config = {
+  "remove tmp files": True,
+  "template file": "/path/to/automation_scripts/templates/lambda_function",
+  "compiled file": "lambda_function.py"
+}
 
 
 class LayerBuilder:
@@ -16,7 +21,8 @@ class LayerBuilder:
 
   def inject_lines(self, lines, fileHandle):
     for line in lines:
-      fileHandle.write(f"{line}\n")
+      if "# ***" not in line:
+        fileHandle.write(f"{line}\n")
 
   def inject_with_indent(self, lines, fileHandle, indent):
     # Write each line with a dynamic level of indentation
@@ -25,9 +31,16 @@ class LayerBuilder:
       lines = [line.strip("\t") for line in lines]
       tabs = ' '*indent*2
       for line in lines:
+        if "# ***" not in line:
+          fileHandle.write(f"{tabs}{line}\n")
+
+  def inject_line_with_indent(self, line, fileHandle, indent):
+    if line is not None:
+      tabs = ' '*indent*2
+      if "# ***" not in line:
         fileHandle.write(f"{tabs}{line}\n")
 
-  def build_from_template(self, template_file, output_file, imports, types, class_code, inputs, pipeline):
+  def build_from_template(self, template_file, output_file, imports, types, class_code, inputs, outputs, pipeline):
     writing = False
     with open(template_file, "r") as t:
       with open(output_file, "w") as o:
@@ -41,10 +54,12 @@ class LayerBuilder:
             self.inject_lines(class_code, o)
           elif ("LAMBDA INPUTS GO HERE" in line):
             self.inject_with_indent(inputs, o, 4)
-          elif ("PIPELINE GOES HERE"in line):
+          elif ("PIPELINE GOES HERE" in line):
             self.inject_with_indent(pipeline, o, 4)
+          elif ("RETURNS GO HERE" in line):
+            self.inject_line_with_indent("return {" + outputs + "}", o, 4)
           elif (writing):
-              o.write(line)
+            o.write(line)
 
   def extract_types(self, src, packages):
     with open(src, "r") as f:
@@ -120,31 +135,29 @@ class LayerBuilder:
             read=True
           if read:
             line = line.replace(f"self.{process}_pre", "preprocessor")
+            line = line.replace(f"self.inference", "TrionServer")
             line = line.replace(f"self.{process}_post", "postprocessor")
             pipeline_lines.append(line)
 
   def extract_pipeline_inputs(self, pipeline):
     parameters = []
-    function_call_pattern = re.compile(r'\b\w+\((.*?)\)')
-
     for line in pipeline:
-        matches = function_call_pattern.findall(line)
-        for match in matches:
-            args = match.split(',')
-            for arg in args:
-                arg = arg.strip()
-                if (
-                      not arg.isdigit()
-                      and not (arg.startswith('"')
-                      and arg.endswith('"'))
-                      and not (arg.startswith("'")
-                      and arg.endswith("'"))
-                      and not arg.startswith('(')
-                      and not arg in ['True', 'False']
-                      and len(arg) > 0
-                    ):
-                    parameters.append(f"{arg} = event.get('{arg}')")
+      if "# *** PARAMS(" in line:
+        start = line.find("(") + 1
+        end = line.find(")")
+        params = line[start:end].split(",")
+        for param in params:
+          parameters.append(f"{param} = event.get('{param}')")
     return parameters
+  
+  def extract_pipeline_outputs(self, pipeline):
+    outputs = []
+    for line in pipeline:
+      if "# *** RETURN(" in line:
+        start = line.find("(") + 1
+        end = line.find(")")
+        outputs = line[start:end]
+    return outputs
 
   def buildLayerForEachDirectory(self, dir, temp_dir):
     packages = []
@@ -159,8 +172,9 @@ class LayerBuilder:
         packages, class_code = self.extract_classes(subdir_path, packages=packages)
         pipeline = self.extract_pipeline("src", subdir)
         inputs = self.extract_pipeline_inputs(pipeline)
+        outputs = self.extract_pipeline_outputs(pipeline)
         compiled = os.path.join(target_dir, self.config['compiled file'])
-        self.build_from_template(self.config["template file"], compiled, packages, types, class_code, inputs, pipeline)
+        self.build_from_template(self.config["template file"], compiled, packages, types, class_code, inputs, outputs, pipeline)
 
   def buildLayer(self, dir, temp_dir):
     packages = []
@@ -168,8 +182,9 @@ class LayerBuilder:
     packages, class_code = self.extract_classes(dir, packages=packages)
     pipeline = self.extract_pipeline("src", dir)
     inputs = self.extract_pipeline_inputs(pipeline)
+    outputs = self.extract_pipeline_outputs(pipeline)
     compiled = os.path.join(temp_dir, self.config['compiled file'])
-    self.build_from_template(self.config["template file"], compiled, packages, types, class_code, inputs, pipeline)
+    self.build_from_template(self.config["template file"], compiled, packages, types, class_code, inputs, outputs, pipeline)
 
   def prepare_template(self, packages):
     with open(self.config["template file"], "r") as f:
