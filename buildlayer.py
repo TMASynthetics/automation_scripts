@@ -125,9 +125,9 @@ class LayerBuilder:
         if f"*** {process.upper()} END ***" in line:
           return pipeline_lines
         if pipeline:
-          if "	# Inference" in line:
+          if "# Inference" in line:
             read=False
-          elif "	# Preprocess" in line or 	"# Postprocess" in line:
+          elif "# Preprocess" in line or 	"# Postprocess" in line:
             read=True
           if read:
             line = line.replace(f"self.{process}_pre", "preprocessor")
