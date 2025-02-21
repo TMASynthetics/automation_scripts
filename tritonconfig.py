@@ -9,13 +9,13 @@ Settings = {
 config = {
       "run tar command": True,
       "triton config file name": "config.pbtxt",
-      "triton config max batch size": 5,
+      "triton config max batch size": 255,
       "triton config platform": "onnxruntime_onnx",
       "triton model version number": 1,
     }
 class TritonConfigBuilder:
   def __init__(self):
-     self.config
+     self.config = config
 
   def get_data_type_string(self, data_type):
       type_map = {
