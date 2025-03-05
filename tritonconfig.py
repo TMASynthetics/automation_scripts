@@ -7,7 +7,7 @@ Settings = {
   "remove tmp files": False,
 }
 config = {
-      "run tar command": True,
+      "run tar command": False,
       "triton config file name": "config.pbtxt",
       "triton config max batch size": 255,
       "triton config platform": "onnxruntime_onnx",
@@ -48,29 +48,31 @@ class TritonConfigBuilder:
           # Load the ONNX model
           model = onnx.load(model_file)
           graph = model.graph
-
+          
+          length = len(graph.input)
           # Extract inputs
           f.write("\ninput [\n")
-          for input_tensor in graph.input:
+          for i, input_tensor in enumerate(graph.input):
               f.write("\t{\n")
               name = input_tensor.name
-              shape = [dim.dim_value for dim in input_tensor.type.tensor_type.shape.dim][1:]
+              shape = [dim.dim_value if dim.dim_value > 0 else -1 for dim in input_tensor.type.tensor_type.shape.dim]
               data_type = input_tensor.type.tensor_type.elem_type
               readable_type = self.get_data_type_string(data_type)
-              f.write(f"\t\tname: {name},\n\t\tdata_type: {readable_type},\n\t\tdims: {shape}\n")
-              f.write("\t},\n")
+              f.write(f"\t\tname: \"{name}\",\n\t\tdata_type: {readable_type},\n\t\tdims: {shape}\n")
+              f.write('\t},\n' if i != length - 1 else '\t}\n')
           f.write("]\n")
 
-          # Extract outputs
+          length = len(graph.output)
+          # Extract inputs
           f.write("\noutput [\n")
-          for output_tensor in graph.output:
+          for i, input_tensor in enumerate(graph.output):
               f.write("\t{\n")
-              name = output_tensor.name
-              shape = [dim.dim_value for dim in output_tensor.type.tensor_type.shape.dim][1:]
-              data_type = output_tensor.type.tensor_type.elem_type
+              name = input_tensor.name
+              shape = [dim.dim_value for dim in input_tensor.type.tensor_type.shape.dim]
+              data_type = input_tensor.type.tensor_type.elem_type
               readable_type = self.get_data_type_string(data_type)
-              f.write(f"\t\tname: {name},\n\t\tdata_type: {readable_type},\n\t\tdims: {shape}\n")
-              f.write("\t},\n")
+              f.write(f"\t\tname: \"{name}\",\n\t\tdata_type: {readable_type},\n\t\tdims: {shape}\n")
+              f.write('\t},\n' if i != length - 1 else '\t}\n')
           f.write("]\n")
 
   def prepare(self, model, repo):
@@ -91,7 +93,7 @@ class TritonConfigBuilder:
     os.makedirs(version_path)
 
     # Copy the model file
-    model_path = os.path.join(version_path, "model.onnx")
+    model_path = os.path.join(version_path, model_name)
     shutil.copy(path, model_path)
 
   def pack_models(self, temp_dir):
