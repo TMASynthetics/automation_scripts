@@ -132,7 +132,7 @@ function install {
     exit 1
   fi
 
-  printf "\n\n== Installing packages! ==\n"
+  printf "\n\n== Installing packages! ==\n\n"
   $package_manager $pkgs
   echo "Done"
   for i in {5..1}
