@@ -121,7 +121,7 @@ function install_tritonconfig.py {
   echo "We will create a directory in your project to store the Triton Server configuration files"
   echo "You can now choose a name for the model repository"
   read -p "Enter the name for the model repository: " model_repo_name
-  "$1"/$tritonconfigenv/bin/python tritonconfig.py --output "$1"/$model_repo_name
+  "$1"/$tritonconfigenv/bin/python "$1"/tritonconfig.py --output "$1"/$model_repo_name
 }
 
 function install {
