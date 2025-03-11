@@ -1,4 +1,4 @@
-import tempfile, shutil, os, onnx
+import tempfile, shutil, os, sys, onnx
 from config.models import MODELS
 import subprocess
 
@@ -119,7 +119,7 @@ class TritonConfigBuilder:
       )
       print(f"Model repository tarball created at: {tar_path}")
 
-def run():
+def run(outputdir=None):
   temp_dir = tempfile.mkdtemp()  # Create the temp directory
   print(f"Temporary directory created at: {temp_dir}")
 
@@ -127,9 +127,18 @@ def run():
   if(Settings["package models"]):
     tritonbuilder.pack_models(temp_dir)
 
+  if (outputdir is not None):
+    print(f"Copying {temp_dir} dir to: {outputdir}")
+    shutil.copytree(temp_dir, outputdir, dirs_exist_ok=True)
+
   if (Settings["remove tmp files"]):
     print("Removing temp dir")
     shutil.rmtree(temp_dir)
 
 if __name__ == "__main__":
-  run()
+  outputdir = None
+  print(sys.argv[2])
+  if (len(sys.argv)) > 2:
+    if (sys.argv[1] == "--output"):
+       outputdir = sys.argv[2]
+  run(outputdir=outputdir)
