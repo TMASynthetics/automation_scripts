@@ -18,6 +18,9 @@ function check_nvidia_drivers {
     else
       echo "✔ NVIDIA drivers already installed"
     fi
+  else
+    echo "❌ NVIDIA GPU not found"
+    return 1
   fi
   return 0
 }
