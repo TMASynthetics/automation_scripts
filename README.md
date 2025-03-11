@@ -5,6 +5,11 @@ Here is a collection of a few automation scripts for speeding up the development
 
 **tritonconfig.py** is used for automatically generating config.pbtxt files and packaging them along with your models into a model_repository.tar.gz file ready for the triton inference server to use
 
+**triton.sh** is a tool used to build and manage the nvidia triton inference sevrer. Some of it's features include:
+* Installing a local Nvidia Triton Inference Server
+* Building the configuration files needed for your Triton server
+* Running and managing the Triton Server
+
 ## How to use
 
 These scripts are designed to be portable and simple to use.

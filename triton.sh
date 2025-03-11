@@ -64,8 +64,15 @@ function run_headless {
 
 function find_project_path {
   echo "Finding projects in the current directory"
-  echo "Below are the projects found"
   dirs=$(find -maxdepth 5 -mindepth 2 -type f -name models.py | rev | cut -d "/" -f5,4,3 | rev)
+  if [ "$dirs" == "" ]
+  then
+    echo "❌ Couldn't find any projects"
+    echo "Please make sure this script is higher up in the directory tree"
+    echo "and that this script can reach the project in one of the subdirectories"
+    exit 1
+  fi
+  echo "Below are the projects found: "
   select dir in $dirs
   do
     project_path=$dir
