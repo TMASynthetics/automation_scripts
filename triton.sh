@@ -108,25 +108,20 @@ function find_model_repository {
 
 function install_tritonconfig.py {
   # Argument $1 is the project directory
-  cd "$1"
-  # Save the current working directory
-  wd=$(pwd)
-  if [ ! -f tritonconfig.py ]
+  if [ ! -f "$1"/tritonconfig.py ]
   then
-     wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/tritonconfig.py -O tritonconfig.py
+     wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/tritonconfig.py -O "$1"/tritonconfig.py
  fi
-  wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/requirements.txt -O .tritonrequirements.txt
-  python3 -m venv $tritonconfigenv
-  $tritonconfigenv/bin/pip install -r .tritonrequirements.txt
-  rm .tritonrequirements.txt
+  wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/requirements.txt -O "$1"/.tritonrequirements.txt
+  python3 -m venv "$1"/$tritonconfigenv
+  "$1"/$tritonconfigenv/bin/pip install -r "$1"/.tritonrequirements.txt
+  rm "$1"/.tritonrequirements.txt
   echo ""
   echo "-- NOTE --"
   echo "We will create a directory in your project to store the Triton Server configuration files"
   echo "You can now choose a name for the model repository"
   read -p "Enter the name for the model repository: " model_repo_name
-  $tritonconfigenv/bin/python tritonconfig.py --output $model_repo_name
-  # Return to the original working directory
-  cd $wd
+  $tritonconfigenv/bin/python tritonconfig.py --output "$1"/$model_repo_name
 }
 
 function install {
