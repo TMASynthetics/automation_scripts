@@ -281,7 +281,11 @@ function menu {
       fi
       find_model_repository
       echo "Model_repository: $model_repository"
-      run_headless triton_server "sudo $0 run $model_repository"
+      if ! run_headless triton_server "sudo $0 run $model_repository"
+      then
+        echo "❌ Failed to start Triton Server"
+        break
+      fi
       sleep 5
       if ! check_triton_running
       then
@@ -291,7 +295,7 @@ function menu {
       fi
       ;;
     "${options[2]}")
-      # killrestart
+      # kill
       sudo screen -x triton_server -X quit
       sudo docker stop $(sudo docker ps -q --filter ancestor=$triton_image) 2>/dev/null
       echo "Triton Server killed"
