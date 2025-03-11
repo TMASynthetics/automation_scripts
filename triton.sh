@@ -6,6 +6,7 @@ package_manager="sudo apt install -y"
 tritonconfigenv=".tritonconfigenv"
 model_repository=""
 project_path=""
+wd=$(pwd)
 
 function check_nvidia_drivers {
   if lspci | grep -i nvidia &> /dev/null
@@ -108,20 +109,22 @@ function find_model_repository {
 
 function install_tritonconfig.py {
   # Argument $1 is the project directory
-  if [ ! -f "$1"/tritonconfig.py ]
+  cd $1
+
+  if [ ! -f tritonconfig.py ]
   then
-     wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/tritonconfig.py -O "$1"/tritonconfig.py
+     wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/tritonconfig.py -O tritonconfig.py
  fi
-  wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/requirements.txt -O "$1"/.tritonrequirements.txt
-  python3 -m venv "$1"/$tritonconfigenv
-  "$1"/$tritonconfigenv/bin/pip install -r "$1"/.tritonrequirements.txt
-  rm "$1"/.tritonrequirements.txt
+  wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/requirements.txt -O .tritonrequirements.txt
+  python3 -m venv $tritonconfigenv
+  $tritonconfigenv/bin/pip install -r .tritonrequirements.txt
+  rm .tritonrequirements.txt
   echo ""
   echo "-- NOTE --"
   echo "We will create a directory in your project to store the Triton Server configuration files"
   echo "You can now choose a name for the model repository"
   read -p "Enter the name for the model repository: " model_repo_name
-  "$1"/$tritonconfigenv/bin/python "$1"/tritonconfig.py --output "$1"/$model_repo_name
+  $tritonconfigenv/bin/python tritonconfig.py --output $model_repo_name
 }
 
 function install {
@@ -286,7 +289,7 @@ function menu {
       then
         echo "run sudo screen -x triton_server to view the output"
         exit 1
-      else
+      else"$1"/
         echo "🎉 Triton Server started successfully!"
       fi
       ;;
@@ -310,6 +313,7 @@ function menu {
       echo "Invalid option $REPLY"
       ;;
     esac
+    cd $wd
     menu
   done
 }
