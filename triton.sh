@@ -285,7 +285,6 @@ function menu {
       if ! check_triton_running
       then
         echo "run sudo screen -x triton_server to view the output"
-        exit 1
       else"$1"/
         echo "🎉 Triton Server started successfully!"
       fi
