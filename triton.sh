@@ -63,7 +63,7 @@ function run_headless {
   if [ "$(sudo screen -ls | grep "$1")" != "" ]
   then
     echo "❌ screen session $1 is already running"
-    ecoh "Try to kill triton server first"
+    echo  "Try to kill triton server first"
     return 1
   else
     echo "Starting $2 in the background"
