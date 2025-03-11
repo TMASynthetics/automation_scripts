@@ -132,9 +132,10 @@ function install {
     exit 1
   fi
 
-  printf "\n\n== Installing packages! ==\n\n"
+  printf "\n\n== Installing packages! ==\n"
   $package_manager $pkgs
   echo "Done"
+  echo ""
   for i in {5..1}
   do
     printf "\r== Verifying Docker in $i seconds == "
