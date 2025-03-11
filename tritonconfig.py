@@ -9,7 +9,7 @@ Settings = {
 config = {
       "run tar command": False,
       "triton config file name": "config.pbtxt",
-      "triton config max batch size": 255,
+      "triton config max batch size": 0,
       "triton config platform": "onnxruntime_onnx",
       "triton model version number": 1,
     }
@@ -44,11 +44,11 @@ class TritonConfigBuilder:
           f.write(f"name: \"{model_name}\"\n")
           f.write(f"platform: \"{platform}\"\n")
           f.write(f"max_batch_size: {batch_size}\n")
-
+          
           # Load the ONNX model
           model = onnx.load(model_file)
           graph = model.graph
-          
+
           length = len(graph.input)
           # Extract inputs
           f.write("\ninput [\n")
@@ -93,7 +93,7 @@ class TritonConfigBuilder:
     os.makedirs(version_path)
 
     # Copy the model file
-    model_path = os.path.join(version_path, model_name)
+    model_path = os.path.join(version_path, "model.onnx")
     shutil.copy(path, model_path)
 
   def pack_models(self, temp_dir):
