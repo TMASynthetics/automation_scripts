@@ -94,7 +94,7 @@ function find_project_path {
 function find_model_repository {
   echo "Finding model repositories in the current directory"
   echo "Below are the model repositories found"
-  dirs=$(find -maxdepth 5 -mindepth 2 -type d -name model_repository | rev | cut -d "/" -f3,2 | rev)
+  dirs=$(find -maxdepth 5 -mindepth 2 -type d -name model_repository | rev | cut -d "/" -f5,4,3,2 | rev)
   if [ "$dirs" == "" ]
   then
     echo "Couldn't find any model repositories"
