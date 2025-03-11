@@ -285,13 +285,14 @@ function menu {
       then
         echo "❌ Failed to start Triton Server"
         break
-      fi
-      sleep 5
-      if ! check_triton_running
-      then
-        echo "run sudo screen -x triton_server to view the output"
       else
-        echo "🎉 Triton Server started successfully!"
+        sleep 5
+        if ! check_triton_running
+        then
+          echo "run sudo screen -x triton_server to view the output"
+        else
+          echo "🎉 Triton Server started successfully!"
+        fi
       fi
       ;;
     "${options[2]}")
