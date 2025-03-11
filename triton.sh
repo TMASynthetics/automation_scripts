@@ -59,10 +59,16 @@ function check_triton_running {
 }
 
 function run_headless {
-  echo "Starting $2 in the background"
-  echo "Run 'sudo screen -x $1' to view the output"
-  sudo screen -dmS "$1" 
-  sudo screen -x "$1" -X stuff "$2\n"
+  if [ "$(sudo screen -ls | grep "$1")" != "" ]
+  then
+    echo "❌ $1 is already running"
+    return 1
+  else
+    echo "Starting $2 in the background"
+    echo "Run 'sudo screen -x $1' to view the output"
+    sudo screen -dmS "$1" 
+    sudo screen -x "$1" -X stuff "$2\n"
+  fi
 }
 
 function find_project_path {
