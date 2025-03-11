@@ -248,6 +248,7 @@ function run {
 
   sudo docker run \
     --rm \
+    --runtime=nvidia \
     --gpus all \
     -p8000:8000 \
     -v $model_repository:/models \
