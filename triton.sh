@@ -101,7 +101,7 @@ function find_model_repository {
 }
 
 function install_tritonconfig.py {
-  # Argument is the project directory
+  # Argument $1 is the project directory
   cd "$1"
   if [ ! -f tritonconfig.py ]
   then
@@ -111,6 +111,7 @@ function install_tritonconfig.py {
   python3 -m venv $tritonconfigenv
   $tritonconfigenv/bin/pip install -r .tritonrequirements.txt
   rm .tritonrequirements.txt
+  echo ""
   read -p "Enter the name for the model repository: " model_repo_name
   python tritonconfig.py --output $model_repo_name
 }
