@@ -103,6 +103,8 @@ function find_model_repository {
 function install_tritonconfig.py {
   # Argument $1 is the project directory
   cd "$1"
+  # Save the current working directory
+  wd=$(pwd)
   if [ ! -f tritonconfig.py ]
   then
      wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/tritonconfig.py -O tritonconfig.py
@@ -113,7 +115,9 @@ function install_tritonconfig.py {
   rm .tritonrequirements.txt
   echo ""
   read -p "Enter the name for the model repository: " model_repo_name
-  python tritonconfig.py --output $model_repo_name
+  $tritonconfigenv/bin/python tritonconfig.py --output $model_repo_name
+  # Return to the original working directory
+  cd $wd
 }
 
 function install {
