@@ -62,7 +62,8 @@ function check_triton_running {
 function run_headless {
   if [ "$(sudo screen -ls | grep "$1")" != "" ]
   then
-    echo "❌ $1 is already running"
+    echo "❌ screen session $1 is already running"
+    ecoh "Try to kill triton server first"
     return 1
   else
     echo "Starting $2 in the background"
@@ -279,7 +280,7 @@ function menu {
         break
       fi
       find_model_repository
-      echo $model_repository
+      echo "Model_repository: $model_repository"
       run_headless triton_server "sudo $0 run $model_repository"
       sleep 5
       if ! check_triton_running
@@ -290,9 +291,9 @@ function menu {
       fi
       ;;
     "${options[2]}")
-      # restart
+      # killrestart
       sudo screen -x triton_server -X quit
-      sudo docker stop $(sudo docker ps -q --filter ancestor=$triton_image)
+      sudo docker stop $(sudo docker ps -q --filter ancestor=$triton_image) 2>/dev/null
       echo "Triton Server killed"
       ;;
     "${options[3]}")
