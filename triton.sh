@@ -161,7 +161,7 @@ function find_model_repository {
 
 function build_tritonconfig.py {
   # Argument $1 is the project directory
-  cd "/tmp"
+  cd "$1"
 
   wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/tritonconfig.py -O tritonconfig.py
   wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/requirements.txt -O .tritonrequirements.txt
@@ -188,12 +188,13 @@ function build_model_repository {
       return 1
     fi
   else
-    build_tritonconfig.py $project_path
+    build_tritonconfig.py "$project_path"
     echo ""
     echo "-- NOTE --"
     echo "We will create a directory in your project to store the Triton Server configuration files"
     echo "You can now choose a name for the model repository"
     read -p "Enter the name for the model repository: " model_repo_name
+    pwd
     $tritonconfigenv/bin/python tritonconfig.py --output $model_repo_name
     rm -rf $tritonconfigenv
     echo "Triton Server configuration files created in $1/$model_repo_name"
