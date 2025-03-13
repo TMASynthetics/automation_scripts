@@ -59,6 +59,52 @@ function check_triton_running {
   fi
 }
 
+function check_model_repository_files {
+  if ! check_model_repository_path $model_repository
+  then 
+    return 1
+  fi
+
+  err=false
+  while read model
+  do
+    model=$model_repository/$model
+    if [ "$(ls $model | grep config.pbtxt)" == "" ]
+    then
+      err=true
+    fi
+  done < <(ls $model_repository)
+  if $err
+  then
+    echo "❌ Using: $model_repository as model_repository failed"
+    echo "Please check the path"
+    echo "Or try to run build the model_repository again"
+    return 1
+  else
+    return 0
+  fi
+}
+
+function check_model_repository_path {
+    # Quick sanity check
+  if [ ! -d "$1" ]
+  then
+    echo "Usage $0 <path to model_repository>"
+    return 1
+  elif [ -d "$1/model_repository" ]
+  then
+    model_repository="$1/model_repository"
+  else
+    model_repository="$1"
+  fi
+  repo_root=$(echo $model_repository | cut -d "/" -f1)
+  real_root=$(pwd | cut -d "/" -f1)
+  if [ "$repo_root" != "$real_root" ]
+  then
+    model_repository=$(pwd)/$model_repository
+  fi
+}
+
 function run_headless {
   if [ "$(sudo screen -ls | grep "$1")" != "" ]
   then
@@ -78,10 +124,15 @@ function find_project_path {
   dirs=$(find -maxdepth 5 -mindepth 2 -type f -name models.py | rev | cut -d "/" -f5,4,3 | rev)
   if [ "$dirs" == "" ]
   then
-    echo "❌ Couldn't find any projects"
-    echo "Please make sure this script is higher up in the directory tree"
-    echo "and that this script can reach the project in one of the subdirectories"
-    exit 1
+    echo "⁉️ Couldn't find any projects"
+    read -p "Do you want to manually enter the path to the project? [y/n]: " choice
+    if [ "$choice" == "y" ]
+    then
+      read -p "Enter the path to the project: " project_path
+      return 0
+    else
+      return 1
+    fi
   fi
   echo "Below are the projects found: "
   select dir in $dirs
@@ -97,9 +148,9 @@ function find_model_repository {
   dirs=$(find -maxdepth 5 -mindepth 2 -type d -name model_repository | rev | cut -d "/" -f5,4,3,2 | rev)
   if [ "$dirs" == "" ]
   then
-    echo "Couldn't find any model repositories"
-    read -p "Please enter the path to the model repository: " dir
-    return $dir
+    echo "⁉️ Couldn't find any model repositories"
+    read -p "Please enter the path to the model repository: " model_repository
+    return 0
   fi
   select dir in $dirs
   do
@@ -108,7 +159,7 @@ function find_model_repository {
   done
 }
 
-function install_tritonconfig.py {
+function build_tritonconfig.py {
   # Argument $1 is the project directory
   cd "$1"
 
@@ -123,12 +174,16 @@ function install_tritonconfig.py {
   echo "You can now choose a name for the model repository"
   read -p "Enter the name for the model repository: " model_repo_name
   $tritonconfigenv/bin/python tritonconfig.py --output $model_repo_name
+  rm -rf $tritonconfigenv
+  echo "Triton Server configuration files created in $1/$model_repo_name"
+  echo "You can now select 'Run' to start Triton Server"
 }
 
-function install {
+function install_triton {
   if ! check_nvidia_drivers
   then
     echo "Please install NVIDIA drivers first"
+    echo "🔗 https://www.nvidia.com/drivers/"
     exit 1
   fi
 
@@ -193,39 +248,16 @@ function install {
 }
                                                                                                                                                                                                                                                                     
 function run {
-  # Quick sanity check
-  if [ ! -d "$1" ]
+  if ! check_model_repository_path $1
   then
-    echo "Usage $0 <path to model_repository>"
+    echo "❌ Model repository not found"
     return 1
-  elif [ -d "$1/model_repository" ]
-  then
-    model_repository="$1/model_repository"
-  else
-    model_repository="$1"
-  fi
-  repo_root=$(echo $model_repository | cut -d "/" -f1)
-  real_root=$(pwd | cut -d "/" -f1)
-  if [ "$repo_root" != "$real_root" ]
-  then
-    model_repository=$(pwd)/$model_repository
   fi
 
-  # Deeper check
-  err=false
-  while read model
-  do
-    model=$model_repository/$model
-    if [ "$(ls $model | grep config.pbtxt)" == "" ]
-    then
-      echo "Error could not find config.pbtxt in $model"
-      echo "Try to run tritonconfig.py again and check the path argument"
-      echo "Using: $model_repository as model_repository failed"
-      err=true
-    fi
-  done < <(ls $model_repository)
-  if $err
+  if ! check_model_repository_files
   then
+    echo "❌ The Model repository is invalid"
+    echo "Please run the script again and provide a valid model repository"
     return 1
   fi
 
@@ -259,14 +291,14 @@ function run {
 }
 
 function menu {
-  PS3="Please select an option: "
-  options=("Install/Verify" "Run" "Kill Triton" "Build Triton config files" "Quit")
+  PS3="Menu: "
+  options=("Install/Verify" "Build Triton config files" "Run" "Kill Triton" "Quit")
   select opt in "${options[@]}"
   do
     case $opt in
     "${options[0]}")
       # install
-      if ! install
+      if ! install_triton
       then
         echo "❌ Installation failed"
         exit 1
@@ -275,6 +307,17 @@ function menu {
       fi
       ;;
     "${options[1]}")
+      # triton config
+      if find_project_path
+      then
+        echo "❌ Couldn't find any projects"
+        echo "[TIP] Copy this script either to your project directory or a parent of the project"
+        echo "Then run the script again"
+        break
+      fi
+      build_tritonconfig.py $project_path
+      ;;
+    "${options[2]}")
       # run
       if check_triton_running >/dev/null
       then
@@ -282,7 +325,17 @@ function menu {
         break
       fi
       find_model_repository
+      if ! check_model_repository_path $model_repository
+      then
+        echo "❌ Model repository not found"
+        break
+      fi
       echo "Model_repository: $model_repository"
+      if ! check_model_repository_files
+      then
+        echo "❌ Stopping"
+        break
+      fi
       if ! run_headless triton_server "sudo $0 run $model_repository"
       then
         echo "❌ Failed to start Triton Server"
@@ -297,16 +350,11 @@ function menu {
         fi
       fi
       ;;
-    "${options[2]}")
+    "${options[3]}")
       # kill
       sudo screen -x triton_server -X quit
       sudo docker stop $(sudo docker ps -q --filter ancestor=$triton_image) 2>/dev/null
       echo "Triton Server killed"
-      ;;
-    "${options[3]}")
-      # triton config
-      find_project_path
-      install_tritonconfig.py $project_path
       ;;
     "${options[4]}")
       # quit
@@ -318,7 +366,19 @@ function menu {
       ;;
     esac
     cd $wd
-    menu
+    echo ""
+    i=0
+    for option in "${options[@]}"
+    do
+      i=$((i+1))
+      if [ $(($i % 4)) == 0 ]
+      then
+        echo ""
+      fi
+      printf "%d) %s  " $i "$option"
+    done
+    echo ""
+    echo "Please select an option: "
   done
 }
 
@@ -338,7 +398,7 @@ echo ""
 
 if [ "$1" == "install" ]
 then
-  install
+  install_triton
 elif [ "$1" == "run" ]
 then
   run $2
