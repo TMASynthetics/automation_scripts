@@ -161,28 +161,50 @@ function find_model_repository {
 
 function build_tritonconfig.py {
   # Argument $1 is the project directory
-  cd "$1"
+  cd "/tmp"
 
   wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/tritonconfig.py -O tritonconfig.py
   wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/requirements.txt -O .tritonrequirements.txt
   python3 -m venv $tritonconfigenv
   $tritonconfigenv/bin/pip install -r .tritonrequirements.txt
   rm .tritonrequirements.txt
-  echo ""
-  echo "-- NOTE --"
-  echo "We will create a directory in your project to store the Triton Server configuration files"
-  echo "You can now choose a name for the model repository"
-  read -p "Enter the name for the model repository: " model_repo_name
-  $tritonconfigenv/bin/python tritonconfig.py --output $model_repo_name
-  rm -rf $tritonconfigenv
-  echo "Triton Server configuration files created in $1/$model_repo_name"
-  echo "You can now select 'Run' to start Triton Server"
+
+}
+
+function build_model_repository {
+  if ! find_project_path
+  then
+    read -p "Do you want to manually enter the path to the models directory? [y/n]: " choice
+    if [ "$choice" == "y" ]
+    then
+      read -p "Enter the path to the models directory: " input_models
+      read -p "Enter the ouptput directory for model_repository: " model_repo_name
+      build_tritonconfig.py "/tmp"
+      $tritonconfigenv/bin/python tritonconfig.py --models "$input_models" --output "$model_repo_name"
+    else
+      echo "❌ Couldn't find any projects"
+      echo "[TIP] Copy this script either to your project directory or a parent of the project"
+      echo "Then run the script again"
+      return 1
+    fi
+  else
+    build_tritonconfig.py $project_path
+    echo ""
+    echo "-- NOTE --"
+    echo "We will create a directory in your project to store the Triton Server configuration files"
+    echo "You can now choose a name for the model repository"
+    read -p "Enter the name for the model repository: " model_repo_name
+    $tritonconfigenv/bin/python tritonconfig.py --output $model_repo_name
+    rm -rf $tritonconfigenv
+    echo "Triton Server configuration files created in $1/$model_repo_name"
+    echo "You can now select 'Run' to start Triton Server"
+  fi
 }
 
 function install_triton {
   if ! check_nvidia_drivers
   then
-    echo "Please install NVIDIA drivers first"
+    echo "Please install NVIDIA dricdfvers first"
     echo "🔗 https://www.nvidia.com/drivers/"
     exit 1
   fi
@@ -307,15 +329,14 @@ function menu {
       fi
       ;;
     "${options[1]}")
-      # triton config
-      if find_project_path
+      # model_repository
+      if ! build_model_repository
       then
-        echo "❌ Couldn't find any projects"
-        echo "[TIP] Copy this script either to your project directory or a parent of the project"
-        echo "Then run the script again"
+        echo "❌ Failed to build model repository"
         break
+      else
+        echo "🎉 Model repository created successfully!"
       fi
-      build_tritonconfig.py $project_path
       ;;
     "${options[2]}")
       # run
