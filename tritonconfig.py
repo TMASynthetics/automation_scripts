@@ -1,7 +1,13 @@
-import tempfile, shutil, os, sys, onnx
-from config.models import MODELS
+import tempfile
+import shutil
+import os
+import sys
+import onnx
 import subprocess
+import argparse
+import glob
 
+MODELS= {}
 Settings = {
   "package models": True,
   "remove tmp files": False,
@@ -136,9 +142,23 @@ def run(outputdir=None):
     shutil.rmtree(temp_dir)
 
 if __name__ == "__main__":
-  outputdir = None
-  print(sys.argv[2])
-  if (len(sys.argv)) > 2:
-    if (sys.argv[1] == "--output"):
-       outputdir = sys.argv[2]
-  run(outputdir=outputdir)
+  args = argparse.ArgumentParser()
+  args.description = "This script generates Triton configuration files for faceFatures"
+  args.description += " models and packages them into a model repository.\n"
+  args.description += "By default this script expects to find the models by their paths from the config/models.py file."
+  args.description += "However, you can specify the path to the mmodels by passing the --models flag."
+  args.epilog = "Example: python tritonconfig.py --output /path/to/output"
+  args.add_argument("--output", help="Output directory", required=False)
+  args.add_argument("--models", help="Path to the models", required=False)
+  args = args.parse_args()
+
+  if args.models is not None:
+    sys.path.append(args.models)
+    model_files = glob.glob(os.path.join(args.models, "*.onnx"))
+    for model_file in model_files:
+      model_name = os.path.basename(model_file).split(".")[0]
+      MODELS[model_name] = {"path": model_file}
+  else:
+    from config.models import MODELS
+
+  run(outputdir=args.output)
