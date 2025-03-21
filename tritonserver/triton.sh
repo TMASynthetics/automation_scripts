@@ -6,6 +6,8 @@ package_manager="sudo apt install -y"
 tritonconfigenv=".tritonconfigenv"
 model_repository=""
 project_path=""
+tritonconfigfile="https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/tritonconfig/tritonconfig.py"
+tritonconfigrequirements="https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/tritonconfig/requirements.txt"
 wd=$(pwd)
 
 function check_nvidia_drivers {
@@ -163,8 +165,8 @@ function build_tritonconfig.py {
   # Argument $1 is the project directory
   cd "$1"
 
-  wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/tritonconfig.py -O tritonconfig.py
-  wget https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/requirements.txt -O .tritonrequirements.txt
+  wget $tritonconfigfile -O tritonconfig.py
+  wget $tritonconfigrequirements -O .tritonrequirements.txt
   python3 -m venv $tritonconfigenv
   $tritonconfigenv/bin/pip install -r .tritonrequirements.txt
   rm .tritonrequirements.txt
