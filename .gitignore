@@ -169,7 +169,3 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-
-convert.py
-buildlayer.py
-tritonconfig.py
