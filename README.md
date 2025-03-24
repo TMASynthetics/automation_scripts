@@ -5,7 +5,7 @@ Here is a collection of tools for setting up and tunning a local testing environ
 
 > [**tritonconfig**](/tritonconfig) is used for automatically generating config.pbtxt files and packaging them along with your models into a model_repository and/or a model_repository.tar.gz file ready for the Triton inference server to use
 
-> [**tritonserver**](/titonserver) is a tool used to build and manage the nvidia Triton inference sevrer. Some of it's features include:
+> [**tritonserver**](/titonserver) is a tool used to build and manage the nvidia Triton inference sevrer. It has a helpful TUI interface.
 
 > [**buildlayer**](/buildlayer) *EXPERIMENTAL* is used for building out our lambda_function.py files based of a template
 
