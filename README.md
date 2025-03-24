@@ -70,10 +70,12 @@ Since each system and GPU may require very different steps to installing the rig
 Please See https://www.nvidia.com/drivers to help you get started
 
 #### 2. Building model_repository
-Triton uses a model_repository for acquiring it's models, in most cases you only need to download [triton.sh](/titonserver/triton.sh) as it serves as a wrapper for the other automation_scripts. Triton.sh uses [tritonconfig](/tritonconfig/) which is a tool for building the model_repository and configuration files needed for Triton Server. If you need to build the model_repository on a separate machine from your instance of Triton Server, you can use this tool to generate the model_repository and manually move it to the machine which will host Triton Server. 
+> Triton uses a model_repository for acquiring it's models, in most cases you only need to download [triton.sh](/titonserver/triton.sh) as it serves as a wrapper for the other automation_scripts. Triton.sh uses [tritonconfig](/tritonconfig/) which is a tool for building the model_repository and configuration files needed for Triton Server. If you need to build the model_repository on a separate machine from your instance of Triton Server, you can use this tool to generate the model_repository and manually move it to the machine which will host Triton Server. 
+
+**Start the triton.sh script**, **select Option 2** from the menu. The script will try to search the current working directory for any Face-Features project files and will ask you to **select which project you want to build the model_repository for**. You can now choose a name for the directory which will be placed at the root of the selected project and will contain the model_repository.
 
 #### 3. Run the server
-Start the triton.sh script, select option 3 in the menu, when prompted select the model_repository that you want to use in Triton Server and Triton Server will be started in the background. The script automatically performs checks to make sure Triton Server has started correctly
+Start the triton.sh script, select option 3 in the menu, when prompted select the model_repository that you want to use in Triton Server and Triton Server will be started in the background. The script automatically performs checks to make sure Triton Server has started correctly.
 
 ##### TIPS:
 * When building model_repositories triton.sh will try to search for Face-Features projects in any subdirectories of the current working directory up to 5 layers deep.
