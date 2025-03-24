@@ -3,7 +3,7 @@ Here is a collection of tools for setting up and tunning a local testing environ
 
 ## Contents of this repository:
 
-> [**tritonconfig**](/tritonconfig) is used for automatically generating config.pbtxt files and packaging them along with your models into a model_repository.tar.gz file ready for the Triton inference server to use
+> [**tritonconfig**](/tritonconfig) is used for automatically generating config.pbtxt files and packaging them along with your models into a model_repository and/or a model_repository.tar.gz file ready for the Triton inference server to use
 
 > [**tritonserver**](/titonserver) is a tool used to build and manage the nvidia Triton inference sevrer. Some of it's features include:
 
