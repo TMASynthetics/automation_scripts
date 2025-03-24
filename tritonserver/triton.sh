@@ -1,13 +1,28 @@
 #!/bin/bash
 
+# Configurations
+## Triton Server image
 triton_image=nvcr.io/nvidia/tritonserver:25.02-py3
+
+## Packages to install
 pkgs="docker.io nvidia-container-toolkit screen"
 package_manager="sudo apt install -y"
+
+## Name of the temporary virtual environment
 tritonconfigenv=".tritonconfigenv"
-model_repository=""
-project_path=""
+
+## Triton Config builder urls
 tritonconfigfile="https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/tritonconfig/tritonconfig.py"
 tritonconfigrequirements="https://raw.githubusercontent.com/TMASynthetics/automation_scripts/refs/heads/main/tritonconfig/requirements.txt"
+
+## Default values
+maxdepth=5            # Maximum depth to search for projects/model_repositories
+host_port=8000        # Port to listen on the host mschine
+container_port=8000   # Port to expose in the container for Triton Server
+
+## Please lesve these empty
+model_repository=""
+project_path=""
 wd=$(pwd)
 
 function check_nvidia_drivers {
@@ -123,7 +138,7 @@ function run_headless {
 
 function find_project_path {
   echo "Finding projects in the current directory"
-  dirs=$(find -maxdepth 5 -mindepth 2 -type f -name models.py | rev | cut -d "/" -f5,4,3 | rev)
+  dirs=$(find -maxdepth $maxdepth -mindepth 2 -type f -name models.py | rev | cut -d "/" -f5,4,3 | rev)
   if [ "$dirs" == "" ]
   then
     echo "⁉️ Couldn't find any projects"
@@ -147,7 +162,7 @@ function find_project_path {
 function find_model_repository {
   echo "Finding model repositories in the current directory"
   echo "Below are the model repositories found"
-  dirs=$(find -maxdepth 5 -mindepth 2 -type d -name model_repository | rev | cut -d "/" -f5,4,3,2 | rev)
+  dirs=$(find -maxdepth $maxdepth -mindepth 2 -type d -name model_repository | rev | cut -d "/" -f5,4,3,2 | rev)
   if [ "$dirs" == "" ]
   then
     echo "⁉️ Couldn't find any model repositories"
@@ -307,7 +322,7 @@ function run {
     --rm \
     --runtime=nvidia \
     --gpus all \
-    -p8000:8000 \
+    -p"$host_port:$container_port" \
     -v $model_repository:/models \
     $triton_image \
     tritonserver \

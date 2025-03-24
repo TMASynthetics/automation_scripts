@@ -12,7 +12,9 @@ Here is a collection of tools for setting up and tunning a local testing environ
 
 ## How to use
 
-Once you have cloned a local copy of this repository you will find the tools organised into sub-directories, each directory contains a README and all the items necessary to run. 
+Once you have cloned a local copy of this repository you will find the tools organised into sub-directories, each directory contains a README and all the items necessary to run.
+
+At the root of this repository is a file named `install.sh` it allows you to access any of the scripts from any directory by either adding them to the $PATH environment variable or by creating a symlink to /usr/bin
 
 ## What is Triton Inference Server?
 
