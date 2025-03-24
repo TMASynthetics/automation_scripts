@@ -1,7 +1,7 @@
 # Tritonconfig
-This script generates Triton configuration files for ONNX models and packages them into a model repository and packages them into a model_repository.
+This script generates Triton configuration files for ONNX models and packages them into a model_repository.
 
-Unless the `--models MODELS_DIR` flag is set this script uses the `config/models.py` file from each of the Face-Features projects to find the relevent modes. So this file either must be placed at the root of any project you wish to use in Triton Server or called with the `--models` flag.
+Unless the `--models MODELS_DIR` flag is set this script uses the `config/models.py` file from each of the Face-Features projects to find the relevent models. So this file either must be placed at the root of any project you wish to use in Triton Server or called with the `--models` flag.
 
 Classes:
   TritonConfigBuilder: A class to build Triton configuration files for ONNX models.

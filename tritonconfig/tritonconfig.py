@@ -102,8 +102,8 @@ class TritonConfigBuilder:
     model_path = os.path.join(version_path, "model.onnx")
     shutil.copy(path, model_path)
 
-  def pack_models(self, temp_dir):
-    repo = os.path.join(temp_dir, "model_repository")
+  def pack_models(self, output_dir):
+    repo = os.path.join(output_dir, "model_repository")
     os.makedirs(repo)
     for model in MODELS.items():
       if model is not None:
@@ -112,34 +112,37 @@ class TritonConfigBuilder:
         except Exception as e:
           print(f"An error occurred: {e}")
     if (self.config["run tar command"]):
-      tar_path = os.path.join(temp_dir, "model_repository.tar.gz")
+      tar_path = os.path.join(output_dir, "model_repository.tar.gz")
       print(f"Creating tarball of model repository at: {tar_path}")
       subprocess.run([
         "tar",
         "-czf",
         tar_path,
         "-C",
-        temp_dir,
+        output_dir,
         "model_repository"],
         check=True
       )
       print(f"Model repository tarball created at: {tar_path}")
 
-def run(outputdir=None):
-  temp_dir = tempfile.mkdtemp()  # Create the temp directory
-  print(f"Temporary directory created at: {temp_dir}")
+def run(args):
+  if args.output is None and args.link is None:
+    output_dir = tempfile.mkdtemp()  # Create the temp directory
+    print(f"Temporary directory created at: {output_dir}")
+  else:
+    output_dir = args.output
 
   tritonbuilder = TritonConfigBuilder()
   if(Settings["package models"]):
-    tritonbuilder.pack_models(temp_dir)
+    tritonbuilder.pack_models(output_dir)
 
-  if (outputdir is not None):
-    print(f"Copying {temp_dir} dir to: {outputdir}")
-    shutil.copytree(temp_dir, outputdir, dirs_exist_ok=True)
+  if (args.output is not None):
+    print(f"Copying {output_dir} dir to: {args.output}")
+    shutil.copytree(output_dir, args.output, dirs_exist_ok=True)
 
   if (Settings["remove tmp files"]):
     print("Removing temp dir")
-    shutil.rmtree(temp_dir)
+    shutil.rmtree(output_dir)
 
 if __name__ == "__main__":
   args = argparse.ArgumentParser()
@@ -161,4 +164,4 @@ if __name__ == "__main__":
   else:
     from config.models import MODELS
 
-  run(outputdir=args.output)
+  run(args=args)
