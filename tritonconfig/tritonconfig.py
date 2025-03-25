@@ -96,11 +96,11 @@ class TritonConfigBuilder:
 
     # Create the directory for the model version
     version_path = os.path.join(model_dir, str(self.config["triton model version number"]))
-    os.makedirs(version_path)
+    os.makedirs(version_path, exist_ok=True)
 
     # Copy the model file
     model_path = os.path.join(version_path, "model.onnx")
-    shutil.copy(path, model_path)
+    shutil.copy(path, model_path, follow_symlinks=True, dirs_exist_ok=True)
 
   def pack_models(self, output_dir):
     repo = os.path.join(output_dir, "model_repository")
