@@ -104,7 +104,7 @@ class TritonConfigBuilder:
 
   def pack_models(self, output_dir):
     repo = os.path.join(output_dir, "model_repository")
-    os.makedirs(repo)
+    os.makedirs(repo, exist_ok=True)
     for model in MODELS.items():
       if model is not None:
         try:
