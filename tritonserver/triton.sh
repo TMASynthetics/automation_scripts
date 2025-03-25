@@ -212,7 +212,7 @@ function build_model_repository {
     then
       read -p "Enter the path to the models directory: " input_models
       read -p "Enter the ouptput directory for model_repository: " model_repo_name
-      build_tritonconfig.py "/tmp"
+      build_tritonconfig.py "$wd"
       $tritonconfigenv/bin/python tritonconfig.py --models "$input_models" --output "$model_repo_name"
     else
       echo "❌ Couldn't find any projects"

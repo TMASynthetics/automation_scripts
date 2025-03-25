@@ -136,7 +136,7 @@ def run(args):
   if(Settings["package models"]):
     tritonbuilder.pack_models(output_dir)
 
-  if (args.output is not None):
+  if (args.output is not None and args.output != output_dir):
     print(f"Copying {output_dir} dir to: {args.output}")
     shutil.copytree(output_dir, args.output, dirs_exist_ok=True)
 
