@@ -100,7 +100,7 @@ class TritonConfigBuilder:
 
     # Copy the model file
     model_path = os.path.join(version_path, "model.onnx")
-    shutil.copy(path, model_path, follow_symlinks=True, dirs_exist_ok=True)
+    shutil.copy(path, model_path, follow_symlinks=True)
 
   def pack_models(self, output_dir):
     repo = os.path.join(output_dir, "model_repository")
