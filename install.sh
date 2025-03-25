@@ -1,8 +1,6 @@
 #!/bin/bash
 
-
 p=$(dirname "$(realpath "$0")")
-
 installation_paths=(
   "$p/tritonserver"
 )

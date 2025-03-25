@@ -27,17 +27,17 @@ It supports a wide range of machine learning and deep learning frameworks, inclu
 ### Examples of a Triton testing environment
 
 ```
-                            Computer 1
-                            with the application
-        +----------------------------------------+ 
-        |   Application                          |
-        |                                        |
-        |  (Sends API        (Recieves the data  | 
-        |   Requests)        via the API)        | 
-        +----------------------------------------+ 
-          |                       ^
-          |                       |      Computer 2
-          v                       |  with Nvidia GPU's
+                            Computer 1                     
+                            with the application           
+        +----------------------------------------+         
+        |   Application                          |         
+        |                                        |         
+        |  (Sends API        (Recieves the data  |         
+        |   Requests)        via the API)        |         
+        +----------------------------------------+         
+          |                       ^                        
+          |                       |      Computer 2        
+          v                       |  with Nvidia GPU's     
 +---------------------------------------------------------+
 |  Triton Inference Server                                |
 |   (Performs inference tasks with the requested model)   |

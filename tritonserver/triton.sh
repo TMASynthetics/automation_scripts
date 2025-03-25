@@ -137,8 +137,12 @@ function run_headless {
 }
 
 function find_project_path {
-  echo "Finding projects in the current directory"
-  dirs=$(find -maxdepth $maxdepth -mindepth 2 -type f -name models.py | rev | cut -d "/" -f5,4,3 | rev)
+  read -p "Do you want to auto search for projects in the current directory? [y/n]: " choice
+  if [ "$choice" == "y" ]
+  then
+    echo "Finding projects in the current directory"
+    dirs=$(find -maxdepth $maxdepth -mindepth 2 -type f -name models.py | rev | cut -d "/" -f5,4,3 | rev)
+  fi
   if [ "$dirs" == "" ]
   then
     echo "⁉️ Couldn't find any projects"
@@ -146,6 +150,9 @@ function find_project_path {
     if [ "$choice" == "y" ]
     then
       read -p "Enter the path to the project: " project_path
+      if [[ "$project_path" != /* ]]; then
+        project_path="$wd/$project_path"
+      fi
       return 0
     else
       return 1
@@ -160,6 +167,12 @@ function find_project_path {
 }
 
 function find_model_repository {
+  read -p "Do you want to auto search for model repositories in the current directory? [y/n]: " choice
+  if [ "$choice" == "n" ]
+  then
+    read -p "Enter the path to the model repository: " model_repository
+    return 0
+  fi
   echo "Finding model repositories in the current directory"
   echo "Below are the model repositories found"
   dirs=$(find -maxdepth $maxdepth -mindepth 2 -type d -name model_repository | rev | cut -d "/" -f5,4,3,2 | rev)
@@ -167,6 +180,9 @@ function find_model_repository {
   then
     echo "⁉️ Couldn't find any model repositories"
     read -p "Please enter the path to the model repository: " model_repository
+    if [[ "$model_repository" != /* ]]; then
+      project_path="$wd/$model_repository"
+    fi
     return 0
   fi
   select dir in $dirs
