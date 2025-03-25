@@ -47,13 +47,13 @@ class TritonConfigBuilder:
       batch_size = self.config["triton config max batch size"]
 
       with open(outfile, "w") as f:
-          f.write(f"name: \"{model_name}\"\n")
-          f.write(f"platform: \"{platform}\"\n")
-          f.write(f"max_batch_size: {batch_size}\n")
-          
           # Load the ONNX model
           model = onnx.load(model_file)
           graph = model.graph
+
+          f.write(f"name: \"{model_name}\"\n")
+          f.write(f"platform: \"{platform}\"\n")
+          f.write(f"max_batch_size: {batch_size}\n")
 
           length = len(graph.input)
           # Extract inputs
