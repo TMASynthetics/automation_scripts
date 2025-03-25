@@ -229,10 +229,10 @@ function build_model_repository {
     read -p "Enter the name for the model repository: " model_repo_name
     pwd
     $tritonconfigenv/bin/python tritonconfig.py --output $model_repo_name
-    rm -rf $tritonconfigenv
     echo "Triton Server configuration files created in $1/$model_repo_name"
     echo "You can now select 'Run' to start Triton Server"
   fi
+  rm -rf $tritonconfigenv tritonconfig.py
 }
 
 function install_triton {

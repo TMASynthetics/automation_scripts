@@ -10,10 +10,10 @@ import glob
 MODELS= {}
 Settings = {
   "package models": True,
-  "remove tmp files": False,
+  "remove tmp files": True,
+  "run tar command": False
 }
 config = {
-      "run tar command": False,
       "triton config file name": "config.pbtxt",
       "triton config max batch size": 0,
       "triton config platform": "onnxruntime_onnx",
@@ -111,7 +111,7 @@ class TritonConfigBuilder:
           self.prepare(model, repo)
         except Exception as e:
           print(f"An error occurred: {e}")
-    if (self.config["run tar command"]):
+    if (Settings["run tar command"]):
       tar_path = os.path.join(output_dir, "model_repository.tar.gz")
       print(f"Creating tarball of model repository at: {tar_path}")
       subprocess.run([
