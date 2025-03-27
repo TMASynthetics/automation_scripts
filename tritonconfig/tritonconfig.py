@@ -140,7 +140,7 @@ def run(args):
     print(f"Copying {output_dir} dir to: {args.output}")
     shutil.copytree(output_dir, args.output, dirs_exist_ok=True)
 
-  if (Settings["remove tmp files"]):
+  if (Settings["remove tmp files"] and args.output is None):
     print("Removing temp dir")
     shutil.rmtree(output_dir)
 
