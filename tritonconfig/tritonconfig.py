@@ -74,7 +74,7 @@ class TritonConfigBuilder:
           for i, input_tensor in enumerate(graph.output):
               f.write("\t{\n")
               name = input_tensor.name
-              shape = [dim.dim_value for dim in input_tensor.type.tensor_type.shape.dim]
+              shape = [dim.dim_value if dim.dim_value > 0 else -1 for dim in input_tensor.type.tensor_type.shape.dim]
               data_type = input_tensor.type.tensor_type.elem_type
               readable_type = self.get_data_type_string(data_type)
               f.write(f"\t\tname: \"{name}\",\n\t\tdata_type: {readable_type},\n\t\tdims: {shape}\n")
