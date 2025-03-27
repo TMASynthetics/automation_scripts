@@ -10,7 +10,7 @@ import glob
 MODELS= {}
 Settings = {
   "package models": True,
-  "remove tmp files": True,
+  "remove tmp files": False,
   "run tar command": False
 }
 config = {
@@ -126,7 +126,7 @@ class TritonConfigBuilder:
       print(f"Model repository tarball created at: {tar_path}")
 
 def run(args):
-  if args.output is None and args.link is None:
+  if args.output is None:
     output_dir = tempfile.mkdtemp()  # Create the temp directory
     print(f"Temporary directory created at: {output_dir}")
   else:

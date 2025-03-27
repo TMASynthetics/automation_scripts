@@ -214,6 +214,14 @@ function build_model_repository {
       read -p "Enter the ouptput directory for model_repository: " model_repo_name
       build_tritonconfig.py "$wd"
       $tritonconfigenv/bin/python tritonconfig.py --models "$input_models" --output "$model_repo_name"
+      if [ -d $model_repo_name ]
+      then
+        echo "Triton Server configuration files created in $model_repo_name"
+      else
+        echo "❌ Failed to create Triton Server configuration files"
+        return 1
+      fi
+      tree $model_repo_name
     else
       echo "❌ Couldn't find any projects"
       echo "[TIP] Copy this script either to your project directory or a parent of the project"
